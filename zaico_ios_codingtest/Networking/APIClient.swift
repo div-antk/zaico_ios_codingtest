@@ -12,6 +12,7 @@ class APIClient {
     
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let session: URLSession
     
     private enum InfoKey {
         static let zaicoToken = "ZAICO_API_TOKEN"
@@ -27,7 +28,14 @@ class APIClient {
         return token
     }()
     
-    private init() {}
+    private init() {
+        self.session = .shared
+    }
+    
+    // テスト用イニシャライザ
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
 
     private func request<T: Decodable>(
         endpoint: String,
@@ -54,7 +62,7 @@ class APIClient {
         request.httpBody = body
         
         // 非同期でAPIを実行
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         
         // HTTPステータスコードを検証
         try validateHTTPResponse(response)
