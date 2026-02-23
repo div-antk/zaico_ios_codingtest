@@ -15,6 +15,11 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         super.viewDidLoad()
         view.backgroundColor = .white
         title = "在庫一覧"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(didTapAdd)
+        )
         
         setupTableView()
         
@@ -66,4 +71,22 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let detailVC = DetailViewController(id: inventories[indexPath.row].id)
         navigationController?.pushViewController(detailVC, animated: true)
     }
+    
+    // ヘッダー右上の新規作成ボタン押下時の処理
+    @objc private func didTapAdd() {
+        let createVC = CreateInventoryViewController()
+        
+        // 作成完了時のコールバック
+        // 作成成功時に一覧データを再取得して画面を更新する
+        createVC.onCreated = { [weak self] in
+            guard let self else { return }
+            Task { await self.fetchData() }
+        }
+
+        // ナビゲーション付きでモーダル表示
+        let nav = UINavigationController(rootViewController: createVC)
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
+    }
 }
+
