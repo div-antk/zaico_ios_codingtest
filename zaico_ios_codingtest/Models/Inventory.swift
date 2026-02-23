@@ -24,3 +24,21 @@ struct Inventory: Codable {
 struct ItemImage: Codable {
     let url: String?
 }
+
+struct CreateInventoryRequest: Encodable {
+    let title: String
+}
+
+struct CreateInventoryResponse: Decodable {
+    let code: Int
+    let status: String
+    let message: String
+    let dataId: Int
+
+    enum CodingKeys: String, CodingKey {
+        case code
+        case status
+        case message
+        case dataId = "data_id"
+    }
+}

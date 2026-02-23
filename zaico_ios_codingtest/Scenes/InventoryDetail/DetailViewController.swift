@@ -56,7 +56,7 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
     
     private func fetchData() async {
         do {
-            let data = try await APIClient.shared.fetchInventorie(id: inventoryId)
+            let data = try await APIClient.shared.fetchInventory(id: inventoryId)
             await MainActor.run {
                 inventory = data
                 tableView.reloadData()
