@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 class InventoryCell: UITableViewCell {
     
     let label1 = UILabel()
