@@ -30,6 +30,7 @@ fastlane/screenshots
 
 # macOS
 .DS_Store
+._DS_Store
 
 # Secrets
 Secrets.xcconfig
