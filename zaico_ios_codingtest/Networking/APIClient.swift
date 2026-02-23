@@ -10,8 +10,18 @@ import Foundation
 class APIClient {
     static let shared = APIClient()
     
+    private enum InfoKey {
+        static let zaicoToken = "ZAICO_API_TOKEN"
+    }
+    
     private let baseURL = "https://web.zaico.co.jp"
-    private let token = "YOUR_ACCESS_TOKEN" // 実際のトークンに置き換える
+    private let token: String = {
+        guard let token = Bundle.main.object(forInfoDictionaryKey: InfoKey.zaicoToken) as? String,
+              !token.isEmpty else {
+            fatalError("ZAICO_API_TOKEN is not set")
+        }
+        return token
+    }()
     
     private init() {}
 
