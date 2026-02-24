@@ -1,5 +1,5 @@
 //
-//  DetailViewController.swift
+//  InventoryDetailViewController.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class DetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     private let inventoryId: Int
     private var inventory: Inventory?
@@ -28,12 +28,12 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         super.viewDidLoad()
         
         title = "詳細情報"
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         
         setupTableView()
         
         Task {
-            await fetchData()
+            await fetchInventory()
         }
     }
     
@@ -54,7 +54,7 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    private func fetchData() async {
+    private func fetchInventory() async {
         do {
             let data = try await APIClient.shared.fetchInventory(id: inventoryId)
             await MainActor.run {

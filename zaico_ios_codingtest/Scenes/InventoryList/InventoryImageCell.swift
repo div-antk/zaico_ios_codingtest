@@ -1,6 +1,6 @@
 
 //
-//  InventoryCell 2.swift
+//  InventoryImageCell.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.

@@ -1,5 +1,5 @@
 //
-//  InventoryTableViewCell.swift
+//  InventoryCell.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.

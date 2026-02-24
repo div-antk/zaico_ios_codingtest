@@ -1,5 +1,5 @@
 //
-//  MainViewController.swift
+//  InventoryListViewController.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MainViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let tableView = UITableView()
     private var inventories: [Inventory] = []
 
@@ -24,7 +24,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         setupTableView()
         
         Task {
-            await fetchData()
+            await fetchInventories()
         }
     }
 
@@ -44,7 +44,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    private func fetchData() async {
+    private func fetchInventories() async {
         do {
             let data = try await APIClient.shared.fetchInventories()
             await MainActor.run {
@@ -68,7 +68,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let detailVC = DetailViewController(id: inventories[indexPath.row].id)
+        let detailVC = InventoryDetailViewController(id: inventories[indexPath.row].id)
         navigationController?.pushViewController(detailVC, animated: true)
     }
     
@@ -80,7 +80,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         // 作成成功時に一覧データを再取得して画面を更新する
         createVC.onCreated = { [weak self] in
             guard let self else { return }
-            Task { await self.fetchData() }
+            Task { await self.fetchInventories() }
         }
 
         // ナビゲーション付きでモーダル表示
