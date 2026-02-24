@@ -12,7 +12,7 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
     private let inventoryId: Int
     private var inventory: Inventory?
     private let tableView = UITableView()
-    private let cellTitles = ["ID", "在庫画像", "タイトル", "数量"]
+    private let cellTitles = ["在庫ID", "在庫画像", "物品名", "数量"]
     
     // initメソッドでIDを渡す
     init(id: Int) {
@@ -51,6 +51,11 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
         
         tableView.dataSource = self
         tableView.delegate = self
+        
+        // Auto Layoutの制約に基づいてセルの高さを自動計算させる
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 60
+        
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
@@ -84,8 +89,9 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
                 cell.configure(leftText: cellTitles[indexPath.row],
                                rightImageURLString: imageURL)
             } else {
+                // URLが無い場合は空文字を渡して、セル側で「画像なし」状態に切り替える
                 cell.configure(leftText: cellTitles[indexPath.row],
-                               rightImageURLString: "imageURL")
+                               rightImageURLString: "")
             }
             return cell
         case 2:
@@ -109,8 +115,4 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
         return cell
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
 }
-
