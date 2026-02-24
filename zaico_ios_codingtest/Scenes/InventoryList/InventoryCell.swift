@@ -1,5 +1,5 @@
 //
-//  InventoryTableViewCell.swift
+//  InventoryCell.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -9,8 +9,8 @@ import UIKit
 
 class InventoryCell: UITableViewCell {
     
-    let label1 = UILabel()
-    let label2 = UILabel()
+    let leftLabel = UILabel()
+    let rightLabel = UILabel()
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -29,32 +29,42 @@ class InventoryCell: UITableViewCell {
     }
     
     private func setupUI() {
-        // ラベル1の設定
-        label1.font = UIFont.systemFont(ofSize: 16)
-        label1.translatesAutoresizingMaskIntoConstraints = false
+        // 左側のラベルの設定
+        leftLabel.font = UIFont.systemFont(ofSize: 16)
+        leftLabel.translatesAutoresizingMaskIntoConstraints = false
+        leftLabel.numberOfLines = 1
+        leftLabel.lineBreakMode = .byTruncatingTail
         
-        // ラベル2の設定
-        label2.font = UIFont.systemFont(ofSize: 16)
-        label2.translatesAutoresizingMaskIntoConstraints = false
+        // 右側のラベルの設定
+        rightLabel.font = UIFont.boldSystemFont(ofSize: 16)
+        rightLabel.translatesAutoresizingMaskIntoConstraints = false
+        rightLabel.numberOfLines = 1
+        rightLabel.lineBreakMode = .byTruncatingTail
         
-        contentView.addSubview(label1)
-        contentView.addSubview(label2)
+        contentView.addSubview(leftLabel)
+        contentView.addSubview(rightLabel)
         
-        // レイアウト制約
+        leftLabel.setContentHuggingPriority(.required, for: .horizontal)
+        leftLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        rightLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        rightLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
         NSLayoutConstraint.activate([
-            label1.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            label1.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            leftLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            leftLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            label2.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            label2.leadingAnchor.constraint(equalTo: label1.trailingAnchor, constant: 10),
+            rightLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            rightLabel.leadingAnchor.constraint(equalTo: leftLabel.trailingAnchor, constant: 8),
+            rightLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            label1.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            label2.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
+            leftLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            rightLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
         ])
     }
     
     func configure(leftText: String, rightText: String) {
-        label1.text = leftText
-        label2.text = rightText
+        leftLabel.text = leftText
+        rightLabel.text = rightText
     }
 }
+
