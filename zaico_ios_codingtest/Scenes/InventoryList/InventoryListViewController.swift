@@ -7,9 +7,10 @@
 
 import UIKit
 
-class InventoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, InventoryListView {
     private let tableView = UITableView()
     private var inventories: [Inventory] = []
+    private lazy var presenter = InventoryListPresenter(view: self)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,9 +24,7 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         
         setupTableView()
         
-        Task {
-            await fetchInventories()
-        }
+        presenter.viewDidLoad()
     }
 
     private func setupTableView() {
@@ -43,17 +42,20 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
-    
-    private func fetchInventories() async {
-        do {
-            let data = try await APIClient.shared.fetchInventories()
-            await MainActor.run {
-                inventories = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
+
+    func showInventories(_ inventories: [Inventory]) {
+        self.inventories = inventories
+        tableView.reloadData()
+    }
+
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "エラー",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -80,7 +82,7 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         // 作成成功時に一覧データを再取得して画面を更新する
         createVC.onCreated = { [weak self] in
             guard let self else { return }
-            Task { await self.fetchInventories() }
+            self.presenter.didCreateInventory()
         }
 
         // ナビゲーション付きでモーダル表示
@@ -89,4 +91,3 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         present(nav, animated: true)
     }
 }
-
