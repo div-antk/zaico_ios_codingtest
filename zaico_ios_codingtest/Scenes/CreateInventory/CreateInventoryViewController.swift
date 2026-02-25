@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class CreateInventoryViewController: UIViewController {
+final class CreateInventoryViewController: UIViewController, CreateInventoryView {
     
     // 作成成功を呼び出し元に通知して在庫一覧を更新させる
     var onCreated: (() -> Void)?
@@ -36,6 +36,8 @@ final class CreateInventoryViewController: UIViewController {
         label.font = .systemFont(ofSize: 13)
         return label
     }()
+
+    private lazy var presenter = CreateInventoryPresenter(view: self)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,36 +80,25 @@ final class CreateInventoryViewController: UIViewController {
         statusLabel.text = ""
     }
 
+    func setCreateButtonEnabled(_ isEnabled: Bool) {
+        createButton.isEnabled = isEnabled
+    }
+
+    func showStatus(_ message: String) {
+        statusLabel.text = message
+    }
+
+    func dismissScreen() {
+        // 一覧更新通知
+        onCreated?()
+        dismiss(animated: true)
+    }
+
     @objc private func didTapCancel() {
         dismiss(animated: true)
     }
 
     @objc private func didTapCreate() {
-        // 入力された空白と改行をトリミングする
-        let title = titleField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !title.isEmpty else { return }
-
-        // 作成ボタンの連打を防ぐ
-        createButton.isEnabled = false
-        statusLabel.text = "作成中…"
-
-        Task {
-            do {
-                _ = try await APIClient.shared.createInventory(CreateInventoryRequest(title: title))
-                await MainActor.run {
-                    self.statusLabel.text = "作成しました"
-                }
-                // 作成成功後、在庫一覧をの更新をトリガーにしてから画面を閉じる
-                self.onCreated?()
-                await MainActor.run {
-                    self.dismiss(animated: true)
-                }
-            } catch {
-                await MainActor.run {
-                    self.statusLabel.text = "作成に失敗しました: \(error.localizedDescription)"
-                    self.createButton.isEnabled = true
-                }
-            }
-        }
+        presenter.didTapCreate(title: titleField.text ?? "")
     }
 }
