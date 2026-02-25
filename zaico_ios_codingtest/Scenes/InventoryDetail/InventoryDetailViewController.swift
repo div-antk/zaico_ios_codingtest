@@ -7,12 +7,17 @@
 
 import UIKit
 
-class InventoryDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, InventoryDetailView {
     
     private let inventoryId: Int
     private var inventory: Inventory?
     private let tableView = UITableView()
     private let cellTitles = ["在庫ID", "在庫画像", "物品名", "数量"]
+    
+    private lazy var presenter = InventoryDetailPresenter(
+        view: self,
+        inventoryId: inventoryId
+    )
     
     // initメソッドでIDを渡す
     init(id: Int) {
@@ -32,9 +37,7 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
         
         setupTableView()
         
-        Task {
-            await fetchInventory()
-        }
+        presenter.viewDidLoad()
     }
     
     private func setupTableView() {
@@ -59,16 +62,19 @@ class InventoryDetailViewController: UIViewController, UITableViewDataSource, UI
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    private func fetchInventory() async {
-        do {
-            let data = try await APIClient.shared.fetchInventory(id: inventoryId)
-            await MainActor.run {
-                inventory = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
+    func showInventory(_ inventory: Inventory) {
+        self.inventory = inventory
+        tableView.reloadData()
+    }
+
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "エラー",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
