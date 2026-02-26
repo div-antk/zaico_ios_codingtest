@@ -9,6 +9,7 @@ import UIKit
 
 class InventoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, InventoryListView {
     private let tableView = UITableView()
+    private let refreshControl = UIRefreshControl()
     private var inventories: [Inventory] = []
     private lazy var presenter = InventoryListPresenter(view: self)
 
@@ -31,6 +32,8 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         view.addSubview(tableView)
         tableView.register(InventoryCell.self, forCellReuseIdentifier: "InventoryCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -47,6 +50,7 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         // idの降順（新しいものが上に来る想定）で並び替え
         self.inventories = inventories.sorted { $0.id > $1.id }
         tableView.reloadData()
+        refreshControl.endRefreshing()
     }
 
     func showError(_ message: String) {
@@ -57,6 +61,7 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+        refreshControl.endRefreshing()
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -73,6 +78,11 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailVC = InventoryDetailViewController(id: inventories[indexPath.row].id)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    // リストを引っ張って更新
+    @objc private func didPullToRefresh() {
+        presenter.viewDidLoad()
     }
     
     // ヘッダー右上の新規作成ボタン押下時の処理
