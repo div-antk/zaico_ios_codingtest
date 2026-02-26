@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  InventoryListViewController.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -7,20 +7,24 @@
 
 import UIKit
 
-class MainViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, InventoryListView {
     private let tableView = UITableView()
     private var inventories: [Inventory] = []
+    private lazy var presenter = InventoryListPresenter(view: self)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         title = "在庫一覧"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(didTapAdd)
+        )
         
         setupTableView()
         
-        Task {
-            await fetchData()
-        }
+        presenter.viewDidLoad()
     }
 
     private func setupTableView() {
@@ -38,17 +42,20 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
-    
-    private func fetchData() async {
-        do {
-            let data = try await APIClient.shared.fetchInventories()
-            await MainActor.run {
-                inventories = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
+
+    func showInventories(_ inventories: [Inventory]) {
+        self.inventories = inventories
+        tableView.reloadData()
+    }
+
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "エラー",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -63,7 +70,24 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let detailVC = DetailViewController(id: inventories[indexPath.row].id)
+        let detailVC = InventoryDetailViewController(id: inventories[indexPath.row].id)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    // ヘッダー右上の新規作成ボタン押下時の処理
+    @objc private func didTapAdd() {
+        let createVC = CreateInventoryViewController()
+        
+        // 作成完了時のコールバック
+        // 作成成功時に一覧データを再取得して画面を更新する
+        createVC.onCreated = { [weak self] in
+            guard let self else { return }
+            self.presenter.didCreateInventory()
+        }
+
+        // ナビゲーション付きでモーダル表示
+        let nav = UINavigationController(rootViewController: createVC)
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
     }
 }

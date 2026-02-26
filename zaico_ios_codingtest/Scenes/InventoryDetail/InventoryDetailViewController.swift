@@ -1,5 +1,5 @@
 //
-//  DetailViewController.swift
+//  InventoryDetailViewController.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -7,12 +7,17 @@
 
 import UIKit
 
-class DetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InventoryDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, InventoryDetailView {
     
     private let inventoryId: Int
     private var inventory: Inventory?
     private let tableView = UITableView()
-    private let cellTitles = ["ID", "在庫画像", "タイトル", "数量"]
+    private let cellTitles = ["在庫ID", "在庫画像", "物品名", "数量"]
+    
+    private lazy var presenter = InventoryDetailPresenter(
+        view: self,
+        inventoryId: inventoryId
+    )
     
     // initメソッドでIDを渡す
     init(id: Int) {
@@ -28,13 +33,11 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         super.viewDidLoad()
         
         title = "詳細情報"
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         
         setupTableView()
         
-        Task {
-            await fetchData()
-        }
+        presenter.viewDidLoad()
     }
     
     private func setupTableView() {
@@ -51,19 +54,27 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         
         tableView.dataSource = self
         tableView.delegate = self
+        
+        // Auto Layoutの制約に基づいてセルの高さを自動計算させる
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 60
+        
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    private func fetchData() async {
-        do {
-            let data = try await APIClient.shared.fetchInventorie(id: inventoryId)
-            await MainActor.run {
-                inventory = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
+    func showInventory(_ inventory: Inventory) {
+        self.inventory = inventory
+        tableView.reloadData()
+    }
+
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "エラー",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -84,8 +95,9 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
                 cell.configure(leftText: cellTitles[indexPath.row],
                                rightImageURLString: imageURL)
             } else {
+                // URLが無い場合は空文字を渡して、セル側で「画像なし」状態に切り替える
                 cell.configure(leftText: cellTitles[indexPath.row],
-                               rightImageURLString: "imageURL")
+                               rightImageURLString: "")
             }
             return cell
         case 2:
@@ -109,8 +121,4 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         return cell
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
 }
-
