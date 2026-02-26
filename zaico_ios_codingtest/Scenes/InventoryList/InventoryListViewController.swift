@@ -44,7 +44,8 @@ class InventoryListViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     func showInventories(_ inventories: [Inventory]) {
-        self.inventories = inventories
+        // idの降順（新しいものが上に来る想定）で並び替え
+        self.inventories = inventories.sorted { $0.id > $1.id }
         tableView.reloadData()
     }
 
